@@ -33,8 +33,31 @@ Hardware, Synthesis, hardware software co-design, Genetic algorithm
 \end{IEEEkeywords}
 
 \section{Introduction}
+Advancements in the VLSI (Very-large-scale integration) technology have made synthesis of electronics circuits using traditional optimization methods for reducing footprint and resources inefficient. As a result, new optimization processes are developed to solve this problem\cite{aminzadeh2006using}.
+
+The synthesis process is responsible for converting the description of the circuit to actual hardware. In broad terms, this is done by achieving two tasks. The fist is scheduling and the second is resource allocation. the scheduling process is responsible for mapping the steps or sub-processes to their clock cycles. This is done while maintaining the dependencies between this process and other processes. Resource allocation however is concerned with mapping the resources needed as registers to save variables, functional units are mapped to logical functions, busses and multiplexers and mapped to interconnections between memory units and functional units\cite{5209958}. As these processes are intertwined an optimized solution must take into account both objectives simultaneously. Thus sequential optimization algorithms can come up short in hardware synthesis. To solve this algorithms like Mixed integer-linear programming can be used. This however becomes impractical very quickly as the cost of generating a solution grow rapidly even for small specifications.\cite{31534}.
+
+Algorithms that are inspired from nature can also be used in this problem as ant colony, genetic algorithm or neural networks as possible solutions to the synthesis problem. Genetic Algorithm (GA) is used extensively in different fields alongside hardware synthesis as AI models, image processing and wireless sensor networks. This is because GA is a general purpose search algorithm that optimizes the intended process according to its fitness function (this will be explained in the upcoming sections). This paper will focus on the application of GA in high level synthesis with a simple example that shows how it is actually implemented in this field.
+\section{Basic Concepts}
+\subsection{High Level Synthesis}
+High level synthesis is a method of generating digital circuits automatically from a behavioral model. This behavioural model  could describe a mathematical equation, the movement of a robot or a home appliance. This behavioral model is usually created in a high level hardware description language (e.g VHDL or Verilog) that is then translated into an intermediate form as a data flow graph (DFG). The DFG shows every process as a separate node running on a specific time slice. Thus scheduling can be directly mapped on the desired DFG and dependencies can be shown by the arrows flowing from one node to another as shown in Fig.\ref{fig:dfg-example}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.3]{cdfg example.png}
+    \caption{Example of a DFG }
+    \label{fig:dfg-example} 
+\end{figure}
+\subsection{Scheduling}
+Scheduling such a process can be done in multiple ways. This usually starts by a process to simplify the amount of nodes to be scheduled. One of the simplest and most straight forward methods is the  \textit{mobility analysis}\cite{8252679}. This relies on scheduling the nodes (processes) using ASAP (As Soon As Possible) at one time and then with ALAP(As Late As Possible) next. The difference in time steps for each node is called \textit{mobility} of the node. This makes the scheduling simpler as any node with mobility 0 can't be moved from one variation to another and thus can be eliminated completely from the optimization process. This saves on computation resources needed and the time as well which in larger and more complex algorithms rather critical.
+
+This has some limitations though, one of the assumptions of this method is that it assumes infinite resources. As with ASAP for example, all available processes are run at the same time slot. In reality however, this is often not the case, where the systems can be constrained by a maximum number of registers, Functional Units, ALUs , etc. This can be mitigated by analyzing on \textit{availability} basis. This is applied by constantly checking the available nodes according their dependencies \textbf{and} the availability in resources. As a consequence this makes the scheduling process more complex due to the loss of ability to eliminate nodes ahead of time as is done in mobility analysis.
 \subsection{Genetic Algorithm}
-Over the years, biology has inspired technology in many different ways. After all, life has found multitude of ways to exist and persist over billions of years in an always changing environmental conditions. Also, as resources in nature are limited there's a constant competition on them, out of this competition arises a constant need for improvement and efficiency. One of the aspects of nature that has been used extensively in the tech sector is the Genetic Algorithm (GA). GA in nature is performed by two main processes, one is evolution and the second is natural selection. The evolution step is responsible for creating the different variations through different process as :
+Over the years, biology has inspired technology in many different ways. After all, life has found multitude of ways to exist and persist over billions of years in an always changing environmental conditions. Also, as resources in nature are limited there's a constant competition on them, out of this competition arises a constant need for improvement and efficiency. One of the aspects of nature that has been used extensively in the tech sector is the Genetic Algorithm (GA). GA in nature is performed by two main processes. These are: 
+\begin{itemize}
+    \item \textbf{Evolution} This is the change that happens to the traits of the individuals from one generation to another. These changes in most cases can be very small and not even visible but the accumulation of these changes can cause dramatic changes over time.
+    \item \textbf{Natural selection} This is the rule that since resources are limited, the survival is only available to the fittest individuals and the most suitable to their environment.
+\end{itemize}
+These two processes work together resulting in an optimization search for the fittest individuals in the population that can breed and generate another generation that because of the same processes would be even fitter. The evolution process generates these changes based on another two processes\cite{681007} which are :
 \begin{itemize}
     \item \textbf{Cross-Over} This is process where the two sets of chromosomes (i.e traits) of the parents and mixed and matched to generate a single set of chromosomes that would be inherited by their offspring.
     \item \textbf{Mutation} This is a process where the chromosomes (traits) of the offspring are changed randomly.
@@ -42,26 +65,15 @@ Over the years, biology has inspired technology in many different ways. After al
 these two processes work together to make sure that there's always a replenishing new set of traits being generated in the genetic pool.
 
 These individuals are then governed by the law of natural selection. As the resources available are limited, this law describes how the survival of the offsprings is always contingent on them being more fit for their environment. With the creation processes mentioned before this inevitably leads to the permeation of specific traits. These traits are mostly only changed with the change the environment.
-\subsection{High Level Synthesis}
-High level synthesis is a method of generating digital circuits automatically from a behavioral model. This behavioural model  could describe a mathematical equation, the movement of a robot or a home appliance. the output of such process is split into four different categories \cite{fourcategories}
-\begin{itemize}
-    \item \textbf{Functional units (FUs)} these are responsible for implementing the logical functions.
-    \item \textbf{Registers and memory units} these are the spaces where the data would be stored.
-    \item \textbf{Switchable connections} these the busses and multiplexers that connect the memory units with functional units.
-    \item \textbf{Controller} this is is the unit that is responsible for switching the switchable connections.
-\end{itemize}
-During the process of High level synthesis a lot of constraints have to managed. Some are fixed like number of pins, space available or time required for each operation while some others need optimization like power consumption and costs.
-Due to the complexity of the synthesis process process which arises because of the complexity of the model, multiple scheduling algorithms have been developed that try to optimize different resources\cite{489146} like reducing the number of FUs or registers or reducing power consumption among many others. Since optimizing all factors at the same time is nearly impossible, algorithms must prioritize some over others. For example an algorithm can prioritize execution time and therefore may decide to sacrifice power consumption.
-
 \section{Implementation}
 
 \subsection{Methodology}
-As discussed the algorithm in HLS is a search algorithm that is searching for the optimized 
 
+Implementing GA in High Level Synthesis is done by simulating individuals of a population as solutions to the scheduling/resource allocation problem. This can be done by showing each individual as a table where each column corresponds to a time slot and each row corresponds to a resource being allocated. Firstly these individuals can be generated at random whether by mobility analysis or availability analysis depending on the available resources. Then natural selection needs to be simulated\cite{daalder1996high}. This is done by the means of a fitness function that grades each individuals. This is left to the designer of the system. This freedom in designing is the whole reason why GA is very powerful. The fitness formula can be designed to fit any number of resources needed to be optimized. Not only that, but it can also have different weights for the different optimized resources. 
 
+After the first generation generation is created and graded comes the step of selecting the best fitting individuals and \textit{breeding} them in order to create a new generation built on the traits of the best performing parents. The creation of this generation can be done in different ways. One of these is slicing and matching, this is done by matching where the two parents have similar traits and seeing where the traits differ and mixing traits from the two parents. This generation is then graded using the fitness formula used for the previous generation and the process repeats.
 
-Genetic algorithm in this regard a more flexible solution as the priority of the fitness function can be changed to serve different functions. The way genetic algorithms are implemented usually is with population containing individuals that are created randomly. This population is then graded on a specific fitness function and the top performing individuals are selected for the next phase. The algorithm then creates a new population based on mixing "traits" of the successful ones to try to improve the overall fitness of the population from one generation to another.
-Implementing GA in HLS, similar to other HLS algorithms start by a system 
+In the following section we take a look at an example of HLS using the GA. This example is simplifying the process by only analyzing ALUs as the resources in concern.
 \subsection{Example}
 Assume a system of differential equations described by the following HDL code :
 \begin{verbatim}
@@ -304,6 +316,9 @@ In this example a mutation can be simulated by swapping the execution of P8 at $
     \end{table}
 
 Analyzing the fitness of offspring \#3 it is seen that it reached 91.67\% which in this case is the maximum utilization possible for a solution with the constrain of 3 ALUs assumed at the beginning of the example.
+
+\section{Conclusion}
+Genetic Algorithm has definitely proved itself as an important search algorithm in multiple applications and specially in High Level Synthesis. The algorithm can reach optimized solutions with competitive accuracy and with built in methods that would get out of local optima. In larger and more complex scenarios the generation of sufficiently enough populations can be demanding in regards of resources but this can cut the amount of generations needed to reach an optimized solution which subsequently would lessen the run time. On the other side however adjusting the parameters for things like mutations rate and crossover percentages can be very tricky as the algorithm is very sensitive to such changes. It is also worth mentioning that the fitness formula is of upmost priority when designing a GA. All in all the GA has been used for a long time and there's no signs of this not continuing in the future as the concepts it's built upon are also still in action every day in the biology happening all around.
 \bibliographystyle{unsrt} 
 \bibliography{refs}
 
